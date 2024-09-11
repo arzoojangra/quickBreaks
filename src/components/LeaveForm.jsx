@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchPartners, fetchPartnerSlotOnDate, submitLeaveRequest } from "../services/api";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import { getTodayDate, isValidDate } from "../services/functions";
 
 function LeaveForm({ showModal, handleCloseModal }) {
   const [partners, setPartners] = useState([]);
@@ -15,17 +16,17 @@ function LeaveForm({ showModal, handleCloseModal }) {
   const handleSubmitLeave = async (e) => {
     e.preventDefault();
     const data = {
-      partnerId: partnerId, 
-      startDate: Math.floor(new Date(startDate).getTime() / 1000), 
-      endDate: Math.floor(new Date(endDate).getTime() / 1000), 
-      slot: slot ? JSON.parse(slot): null, 
-      reason: reason, 
-      type: leaveType
-    }
+      partnerId: partnerId,
+      startDate: Math.floor(new Date(startDate).getTime() / 1000),
+      endDate: Math.floor(new Date(endDate).getTime() / 1000),
+      slot: slot ? JSON.parse(slot) : null,
+      reason: reason,
+      type: leaveType,
+    };
     let res = await submitLeaveRequest(data);
-    if(res.error){
+    if (res.error) {
       toast.error(res.message);
-    }else{
+    } else {
       toast.success(res.message);
       handleCloseModal();
     }
@@ -44,9 +45,9 @@ function LeaveForm({ showModal, handleCloseModal }) {
     const unixTime = Math.floor(new Date(date).getTime() / 1000);
     try {
       const slots = await fetchPartnerSlotOnDate(partnerId, unixTime);
-      if(!slots || !slots.data){
+      if (!slots || !slots.data) {
         toast.error(slots.message);
-      }else{
+      } else {
         setSlots(slots.data);
       }
     } catch (error) {
@@ -160,12 +161,16 @@ function LeaveForm({ showModal, handleCloseModal }) {
                         type="date"
                         value={startDate}
                         onChange={(e) => {
-                          setStartDate(e.target.value);
-                          setEndDate(e.target.value);
-                          fetchSlot(partnerId, e.target.value);
+                          const selectedDate = e.target.value;
+                          setStartDate(selectedDate);
+                          setEndDate(selectedDate);
+                          if (isValidDate(selectedDate)) {
+                            fetchSlot(partnerId, selectedDate);
+                          }
                         }}
                         className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
                         required
+                        min={getTodayDate()}
                       />
                     </div>
                     {startDate && slots.length > 0 && (
@@ -182,7 +187,13 @@ function LeaveForm({ showModal, handleCloseModal }) {
                           <option value="">Select slot</option>
                           {slots &&
                             slots.map((slot, index) => (
-                              <option value={JSON.stringify({start: slot.start, end: slot.end})} key={index}>
+                              <option
+                                value={JSON.stringify({
+                                  start: slot.start,
+                                  end: slot.end,
+                                })}
+                                key={index}
+                              >
                                 {slot.start}-{slot.end}
                               </option>
                             ))}

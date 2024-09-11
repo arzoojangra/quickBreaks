@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { fetchPartnerSlotOnDate, updateLeave } from "../services/api";
 import { toast } from "react-toastify";
 import moment from "moment";
+import { getTodayDate } from "../services/functions";
 
 function EditLeave({ leave, handleCloseModal, showModal }) {
   const [partnerId, setPartnerId] = useState("");
@@ -12,16 +13,16 @@ function EditLeave({ leave, handleCloseModal, showModal }) {
   const [endDate, setEndDate] = useState("");
   const [status, setStatus] = useState("");
   const [slot, setSlot] = useState("");
-  const [slots, setSlots] = useState("");
+  const [slots, setSlots] = useState([]);
 
   const fetchSlot = async (partnerId, date) => {
     const unixTime = Math.floor(new Date(date).getTime() / 1000);
     try {
       const slots = await fetchPartnerSlotOnDate(partnerId, unixTime);
-      if(!slots || !slots.data){
+      if (!slots || !slots.data) {
         toast.error(slots.message);
-      }else{
-        setSlots(slots.data);
+      } else {
+        setSlots(slots.data.data);
       }
     } catch (error) {
       console.error("Error fetching leave requests", error);
@@ -160,10 +161,10 @@ function EditLeave({ leave, handleCloseModal, showModal }) {
                         onChange={(e) => {
                           setStartDate(e.target.value);
                           setEndDate(e.target.value);
-                          // fetchSlot(partnerId, e.target.value);
                         }}
                         className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
                         required
+                        min={getTodayDate()}
                       />
                     </div>
 
@@ -178,7 +179,7 @@ function EditLeave({ leave, handleCloseModal, showModal }) {
                         required
                       >
                         <option value="">Select slot</option>
-                        {slots &&
+                        {slots && slots.length > 0 ? (
                           slots.map((slot, index) => (
                             <option
                               value={JSON.stringify({
@@ -189,7 +190,10 @@ function EditLeave({ leave, handleCloseModal, showModal }) {
                             >
                               {slot.start}-{slot.end}
                             </option>
-                          ))}
+                          ))
+                        ) : (
+                          <option value="">No slots available</option> // Fallback if no slots are available
+                        )}
                       </select>
                     </div>
                   </>
