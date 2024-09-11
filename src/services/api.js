@@ -56,7 +56,7 @@ export const fetchPartnerSlotOnDate = async (partnerId, date) => {
     const response = await axios.get(`${API_BASE_URL}/findScheduleForDate?partnerId=${partnerId}&date=${date}`, {
       headers: headers
     });
-    return response.data.data;
+    return response.data;
   } catch (error) {
     console.error('Error submitting leave request:', error);
     throw error;

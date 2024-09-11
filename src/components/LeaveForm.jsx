@@ -44,7 +44,11 @@ function LeaveForm({ showModal, handleCloseModal }) {
     const unixTime = Math.floor(new Date(date).getTime() / 1000);
     try {
       const slots = await fetchPartnerSlotOnDate(partnerId, unixTime);
-      setSlots(slots.data);
+      if(!slots || !slots.data){
+        toast.error(slots.message);
+      }else{
+        setSlots(slots.data);
+      }
     } catch (error) {
       console.error("Error fetching leave requests", error);
     }
@@ -60,17 +64,17 @@ function LeaveForm({ showModal, handleCloseModal }) {
         <div className="fixed z-10 inset-0 overflow-y-auto w-full">
           <div className="flex items-center justify-center min-h-screen">
             <div className="fixed inset-0 bg-gray-600 bg-opacity-80 flex justify-center items-center"></div>
-            <div className="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg z-20">
+            <div className="bg-white w-full max-w-lg px-6 py-3 rounded-lg shadow-lg z-20">
               <h2 className="text-xl mb-4">Apply for Leave</h2>
               <form onSubmit={handleSubmitLeave}>
-                <div className="mb-4">
+                <div className="mb-3">
                   <label className="block text-gray-700 text-sm font-bold mb-2">
                     Select Partner
                   </label>
                   <select
                     value={partnerId}
                     onChange={(e) => setPartnerId(e.target.value)}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight"
+                    className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
                     required
                   >
                     <option value="">Select Partner</option>
@@ -84,7 +88,7 @@ function LeaveForm({ showModal, handleCloseModal }) {
                 </div>
 
                 {partnerId && (
-                  <div className="mb-4">
+                  <div className="mb-3">
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       Select Leave Type
                     </label>
@@ -93,7 +97,7 @@ function LeaveForm({ showModal, handleCloseModal }) {
                       onChange={(e) => {
                         setLeaveType(e.target.value);
                       }}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight"
+                      className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
                     >
                       <option value="multiple">More than one day</option>
                       <option value="single">Single day</option>
@@ -102,14 +106,14 @@ function LeaveForm({ showModal, handleCloseModal }) {
                 )}
 
                 {leaveType && partnerId && (
-                  <div className="mb-4">
+                  <div className="mb-3">
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       Reason
                     </label>
                     <textarea
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight"
+                      className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
                     />
                   </div>
                 )}
@@ -118,7 +122,7 @@ function LeaveForm({ showModal, handleCloseModal }) {
                 {leaveType === "multiple" ? (
                   <>
                     {leaveType && partnerId && (
-                      <div className="mb-4">
+                      <div className="mb-3">
                         <label className="block text-gray-700 text-sm font-bold mb-2">
                           Start Date
                         </label>
@@ -126,13 +130,13 @@ function LeaveForm({ showModal, handleCloseModal }) {
                           type="date"
                           value={startDate}
                           onChange={(e) => setStartDate(e.target.value)}
-                          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight"
+                          className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
                           required
                         />
                       </div>
                     )}
                     {startDate && (
-                      <div className="mb-4">
+                      <div className="mb-3">
                         <label className="block text-gray-700 text-sm font-bold mb-2">
                           End Date
                         </label>
@@ -140,7 +144,7 @@ function LeaveForm({ showModal, handleCloseModal }) {
                           type="date"
                           value={endDate}
                           onChange={(e) => setEndDate(e.target.value)}
-                          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight"
+                          className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
                           required
                         />
                       </div>
@@ -148,7 +152,7 @@ function LeaveForm({ showModal, handleCloseModal }) {
                   </>
                 ) : (
                   <>
-                    <div className="mb-4">
+                    <div className="mb-3">
                       <label className="block text-gray-700 text-sm font-bold mb-2">
                         Select Date
                       </label>
@@ -160,19 +164,19 @@ function LeaveForm({ showModal, handleCloseModal }) {
                           setEndDate(e.target.value);
                           fetchSlot(partnerId, e.target.value);
                         }}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight"
+                        className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
                         required
                       />
                     </div>
-                    {startDate && (
-                      <div className="mb-4">
+                    {startDate && slots.length > 0 && (
+                      <div className="mb-3">
                         <label className="block text-gray-700 text-sm font-bold mb-2">
                           Select Slot
                         </label>
                         <select
                           value={slot}
                           onChange={(e) => setSlot(e.target.value)}
-                          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight"
+                          className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
                           required
                         >
                           <option value="">Select slot</option>
@@ -188,11 +192,11 @@ function LeaveForm({ showModal, handleCloseModal }) {
                   </>
                 )}
 
-                <div className="flex justify-end">
+                <div className="flex justify-end py-2">
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="bg-orange-200 hover:bg-orange-300 text-gray-800 font-bold py-2 px-4 rounded mr-2"
+                    className="bg-orange-200 hover:bg-orange-300 text-gray-800 font-bold py-2 px-4 rounded mr-3"
                   >
                     Cancel
                   </button>

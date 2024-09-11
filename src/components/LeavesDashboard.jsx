@@ -17,7 +17,9 @@ function LeavesDashboard() {
   const fetchLeaves = async () => {
     try {
       const leavesList = await fetchLeaveRequests();
-      setLeaves(leavesList.data);
+      if(leavesList && leavesList.data){
+        setLeaves(leavesList.data);
+      }
       setLoading(false);
     } catch (error) {
       console.error("Error fetching leave requests", error);
@@ -52,81 +54,87 @@ function LeavesDashboard() {
           <div className="text-xl font-semibold">Leaves Dashboard</div>
           <button
             onClick={handleApplyLeave}
-            className="text-black hover:bg-orange-200 focus:ring-4 focus:ring-primary-300 font-bold rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2  focus:outline-none"
+            className="text-black bg-orange-200 hover:bg-orange-300 focus:ring-4 focus:ring-primary-300 font-bold rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2  focus:outline-none"
           >
             Apply Leave
           </button>
         </div>
-        <table className="w-full text-sm text-left rtl:text-right">
-          <thead className="text-md bg-orange-200">
-            <tr>
-              <th scope="col" className="px-6 py-3">
-                Name
-              </th>
-              <th scope="col" className="px-6 py-3">
-                City
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Applied Date
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Start Date
-              </th>
-              <th scope="col" className="px-6 py-3">
-                End Date
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Status
-              </th>
-              <th scope="col" className="px-6 py-3"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {leaves &&
-              leaves.map((leave) => (
-                <tr className="hover:bg-orange-50" key={leave._id}>
-                  <td className="px-6 py-2 font-medium">
-                    {leave.partnerId.name}
-                  </td>
-                  <td className="px-6 py-2">{leave.partnerId.city}</td>
-                  <td className="px-6 py-2">
-                    {moment(leave.appliedDate).format(
-                      "MMM DD, YYYY [at] hh:mm A"
-                    )}
-                  </td>
-                  <td className="px-6 py-2">
-                    {moment(leave.startDate).format(
-                      "MMM DD, YYYY [at] hh:mm A"
-                    )}
-                  </td>
-                  <td className="px-6 py-2">
-                    {moment(leave.endDate).format("MMM DD, YYYY [at] hh:mm A")}
-                  </td>
-                  <td
-                    className="px-6 py-2"
-                    style={{
-                      color:
-                        leave.status.toUpperCase() === "APPROVED"
-                          ? "green"
-                          : leave.status.toUpperCase() === "PENDING"
-                          ? "orange"
-                          : "red",
-                    }}
-                  >
-                    {leave.status}
-                  </td>
-                  <td className="px-6 py-2">
-                    <button
-                      onClick={() => handleOpenEditLeave(leave)}
-                      className="font-medium text-orange-500 hover:underline"
+        {leaves.length > 0 ? (
+          <table className="w-full text-sm text-left rtl:text-right">
+            <thead className="text-md bg-orange-200">
+              <tr>
+                <th scope="col" className="px-6 py-3">
+                  Name
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  City
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  Applied Date
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  Start Date
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  End Date
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  Status
+                </th>
+                <th scope="col" className="px-6 py-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {leaves &&
+                leaves.map((leave) => (
+                  <tr className="hover:bg-orange-50" key={leave._id}>
+                    <td className="px-6 py-2 font-medium">
+                      {leave.partnerId.name}
+                    </td>
+                    <td className="px-6 py-2">{leave.partnerId.city}</td>
+                    <td className="px-6 py-2">
+                      {moment(leave.appliedDate).format(
+                        "MMM DD, YYYY [at] hh:mm A"
+                      )}
+                    </td>
+                    <td className="px-6 py-2">
+                      {moment(leave.startDate).format(
+                        "MMM DD, YYYY [at] hh:mm A"
+                      )}
+                    </td>
+                    <td className="px-6 py-2">
+                      {moment(leave.endDate).format(
+                        "MMM DD, YYYY [at] hh:mm A"
+                      )}
+                    </td>
+                    <td
+                      className="px-6 py-2"
+                      style={{
+                        color:
+                          leave.status.toUpperCase() === "APPROVED"
+                            ? "green"
+                            : leave.status.toUpperCase() === "PENDING"
+                            ? "orange"
+                            : "red",
+                      }}
                     >
-                      <FontAwesomeIcon icon={faPen} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+                      {leave.status}
+                    </td>
+                    <td className="px-6 py-2">
+                      <button
+                        onClick={() => handleOpenEditLeave(leave)}
+                        className="font-medium text-orange-500 hover:underline"
+                      >
+                        <FontAwesomeIcon icon={faPen} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="flex justify-center my-2">No leaves found!!</div>
+        )}
       </div>
       <LeaveForm showModal={showModal} handleCloseModal={handleCloseModal} />
       <EditLeave
