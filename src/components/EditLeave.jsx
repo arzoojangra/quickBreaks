@@ -3,6 +3,7 @@ import { fetchPartnerSlotOnDate, updateLeave } from "../services/api";
 import { toast } from "react-toastify";
 import moment from "moment";
 import { getTodayDate } from "../services/functions";
+import Loader from "./Loader";
 
 function EditLeave({ leave, handleCloseModal, showModal }) {
   const [partnerId, setPartnerId] = useState("");
@@ -14,6 +15,7 @@ function EditLeave({ leave, handleCloseModal, showModal }) {
   const [status, setStatus] = useState("");
   const [slot, setSlot] = useState("");
   const [slots, setSlots] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchSlot = async (partnerId, date) => {
     const unixTime = Math.floor(new Date(date).getTime() / 1000);
@@ -21,11 +23,14 @@ function EditLeave({ leave, handleCloseModal, showModal }) {
       const slots = await fetchPartnerSlotOnDate(partnerId, unixTime);
       if (!slots || !slots.data) {
         toast.error(slots.message);
+        setLoading(false);
       } else {
         setSlots(slots.data.data);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching leave requests", error);
+      setLoading(false);
     }
   };
 
@@ -63,6 +68,8 @@ function EditLeave({ leave, handleCloseModal, showModal }) {
           leave.partnerId._id,
           moment(leave.startDate).format("YYYY-MM-DD")
         );
+      } else {
+        setLoading(false);
       }
       setStatus(leave.status);
       setSlot(JSON.stringify(leave.slot));
@@ -77,159 +84,163 @@ function EditLeave({ leave, handleCloseModal, showModal }) {
             <div className="fixed inset-0 bg-gray-600 bg-opacity-80 flex justify-center items-center"></div>
             <div className="bg-white w-full max-w-lg py-3 px-6 rounded-lg shadow-lg z-20">
               <h2 className="text-xl mb-4">Edit Leave</h2>
-              <form onSubmit={handleSubmitLeave}>
-                <div className="mb-3">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Partner
-                  </label>
-                  <input
-                    type="text"
-                    value={partnerName}
-                    className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
-                    disabled
-                  />
-                </div>
+              {loading ? (
+                <Loader />
+              ) : (
+                <form onSubmit={handleSubmitLeave}>
+                  <div className="mb-3">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Partner
+                    </label>
+                    <input
+                      type="text"
+                      value={partnerName}
+                      className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
+                      disabled
+                    />
+                  </div>
 
-                <div className="mb-3">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Leave Type
-                  </label>
-                  <select
-                    value={leaveType}
-                    onChange={(e) => {
-                      setLeaveType(e.target.value);
-                      setStartDate("");
-                      setEndDate("");
-                      setSlot("");
-                    }}
-                    className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
-                  >
-                    <option value="multiple">More than one day</option>
-                    <option value="single">Single day</option>
-                  </select>
-                </div>
+                  <div className="mb-3">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Leave Type
+                    </label>
+                    <select
+                      value={leaveType}
+                      onChange={(e) => {
+                        setLeaveType(e.target.value);
+                        setStartDate("");
+                        setEndDate("");
+                        setSlot("");
+                      }}
+                      className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
+                    >
+                      <option value="multiple">More than one day</option>
+                      <option value="single">Single day</option>
+                    </select>
+                  </div>
 
-                <div className="mb-3">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Reason
-                  </label>
-                  <textarea
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
-                  />
-                </div>
+                  <div className="mb-3">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Reason
+                    </label>
+                    <textarea
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
+                    />
+                  </div>
 
-                {/* Conditional Rendering for Multiple or Single Day */}
-                {leaveType === "multiple" ? (
-                  <>
-                    <div className="mb-3">
-                      <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Start Date
-                      </label>
-                      <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
-                        required
-                      />
-                    </div>
+                  {/* Conditional Rendering for Multiple or Single Day */}
+                  {leaveType === "multiple" ? (
+                    <>
+                      <div className="mb-3">
+                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                          Start Date
+                        </label>
+                        <input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                          className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
+                          required
+                        />
+                      </div>
 
-                    <div className="mb-3">
-                      <label className="block text-gray-700 text-sm font-bold mb-2">
-                        End Date
-                      </label>
-                      <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
-                        required
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="mb-3">
-                      <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Select Date
-                      </label>
-                      <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => {
-                          setStartDate(e.target.value);
-                          setEndDate(e.target.value);
-                        }}
-                        className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
-                        required
-                        min={getTodayDate()}
-                      />
-                    </div>
+                      <div className="mb-3">
+                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                          End Date
+                        </label>
+                        <input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
+                          required
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="mb-3">
+                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                          Select Date
+                        </label>
+                        <input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => {
+                            setStartDate(e.target.value);
+                            setEndDate(e.target.value);
+                          }}
+                          className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
+                          required
+                          min={getTodayDate()}
+                        />
+                      </div>
 
-                    <div className="mb-3">
-                      <label className="block text-gray-700 text-sm font-bold mb-2">
-                        Select Slot
-                      </label>
-                      <select
-                        value={slot}
-                        onChange={(e) => setSlot(e.target.value)}
-                        className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
-                        required
-                      >
-                        <option value="">Select slot</option>
-                        {slots && slots.length > 0 ? (
-                          slots.map((slot, index) => (
-                            <option
-                              value={JSON.stringify({
-                                start: slot.start,
-                                end: slot.end,
-                              })}
-                              key={index}
-                            >
-                              {slot.start}-{slot.end}
-                            </option>
-                          ))
-                        ) : (
-                          <option value="">No slots available</option> // Fallback if no slots are available
-                        )}
-                      </select>
-                    </div>
-                  </>
-                )}
-                <div className="mb-3">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Status
-                  </label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
-                    required
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Denied">Denied</option>
-                  </select>
-                </div>
+                      <div className="mb-3">
+                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                          Select Slot
+                        </label>
+                        <select
+                          value={slot}
+                          onChange={(e) => setSlot(e.target.value)}
+                          className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
+                          required
+                        >
+                          <option value="">Select slot</option>
+                          {slots && slots.length > 0 ? (
+                            slots.map((slot, index) => (
+                              <option
+                                value={JSON.stringify({
+                                  start: slot.start,
+                                  end: slot.end,
+                                })}
+                                key={index}
+                              >
+                                {slot.start}-{slot.end}
+                              </option>
+                            ))
+                          ) : (
+                            <option value="">No slots available</option> // Fallback if no slots are available
+                          )}
+                        </select>
+                      </div>
+                    </>
+                  )}
+                  <div className="mb-3">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                      className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight"
+                      required
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Approved">Approved</option>
+                      <option value="Denied">Denied</option>
+                    </select>
+                  </div>
 
-                <div className="flex justify-end py-2">
-                  <button
-                    type="button"
-                    onClick={handleCloseModal}
-                    className="bg-orange-200 hover:bg-orange-300 text-gray-800 font-bold py-2 px-4 rounded mr-3"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded"
-                  >
-                    Submit
-                  </button>
-                </div>
-              </form>
+                  <div className="flex justify-end py-2">
+                    <button
+                      type="button"
+                      onClick={handleCloseModal}
+                      className="bg-orange-200 hover:bg-orange-300 text-gray-800 font-bold py-2 px-4 rounded mr-3"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded"
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>
